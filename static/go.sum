@@ -1,0 +1,4 @@
+github.com/fyrna/mofu v0.0.0-20251102203711-a3b51ae00db5 h1:bTqVvrSOgM8tx7A5UNjDbywb5X7aOG+i1LOQzwgNp0M=
+github.com/fyrna/mofu v0.0.0-20251102203711-a3b51ae00db5/go.mod h1:5wX+nkGvVUxClk8AvbLBFvAk7bqw+k8t7Qj73Lhzbpo=
+github.com/fyrna/x/color v0.4.0 h1:6MXCBT+m1DpP0dAMFIErn4VAXm3St81x/O+uXXROS0Q=
+github.com/fyrna/x/color v0.4.0/go.mod h1:+baX61cVz3GRe9Xrl16jhYTPPUcUSj3/XRVbRi83csI=
