@@ -14,16 +14,6 @@ import (
 	"github.com/fyrna/x/color"
 )
 
-type Config struct {
-	EnableColors    bool
-	LogRequestBody  bool
-	LogResponseBody bool
-	MaxBodySize     int
-	SkipPaths       []string
-	EnableIP        bool
-	EnableUserAgent bool
-}
-
 type statusRecorder struct {
 	http.ResponseWriter
 	status      int
@@ -47,6 +37,16 @@ func (r *statusRecorder) Write(b []byte) (int, error) {
 	return size, err
 }
 
+type Config struct {
+	EnableColors    bool
+	LogRequestBody  bool
+	LogResponseBody bool
+	MaxBodySize     int
+	SkipPaths       []string
+	EnableIP        bool
+	EnableUserAgent bool
+}
+
 func DefaultConfig() *Config {
 	return &Config{
 		EnableColors:    true,
@@ -59,7 +59,7 @@ func DefaultConfig() *Config {
 	}
 }
 
-func Logger(config ...*Config) mofu.Middleware {
+func Sparkle(config ...*Config) mofu.Middleware {
 	cfg := DefaultConfig()
 	if len(config) > 0 && config[0] != nil {
 		cfg = config[0]
