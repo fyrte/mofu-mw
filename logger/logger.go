@@ -38,18 +38,44 @@ func (r *statusRecorder) Write(b []byte) (int, error) {
 }
 
 type Config struct {
-	EnableColors    bool
-	LogRequestBody  bool
+	// EnableColor enables colored output in logs to improve readability
+	// Default: true
+	EnableColor bool
+
+	// LogRequestBody enables logging of HTTP request bodies
+	// If enabled, the request body will be shown in the logs (limited by MaxBodySize)
+	// Default: false
+	LogRequestBody bool
+
+	// LogResponseBody enables logging of HTTP response bodies
+	// If enabled, the response body will be shown in the logs (limited by MaxBodySize)
+	// Default: false
 	LogResponseBody bool
-	MaxBodySize     int
-	SkipPaths       []string
-	EnableIP        bool
+
+	// MaxBodySize specifies the maximum size of the request/response body to be logged
+	// Bodies exceeding this size will be truncated
+	// Default: 1024 (1KB)
+	MaxBodySize int
+
+	// SkipPaths contains a list of paths that will be excluded from logging
+	// Useful for endpoints like health checks or metrics that don’t need to be logged
+	// Default: []string{"/health", "/metrics"}
+	SkipPaths []string
+
+	// EnableIP enables logging of the client’s IP address
+	// If enabled, the client’s IP will be shown in the logs
+	// Default: true
+	EnableIP bool
+
+	// EnableUserAgent enables logging of the User-Agent header
+	// If enabled, the client’s User-Agent will be shown in the logs
+	// Default: true
 	EnableUserAgent bool
 }
 
-func DefaultConfig() *Config {
-	return &Config{
-		EnableColors:    true,
+func Sparkle(opts ...ConfigOption) mofu.Middleware {
+	cfg := &Config{
+		EnableColor:     true,
 		LogRequestBody:  false,
 		LogResponseBody: false,
 		MaxBodySize:     1024, // 1KB
@@ -57,12 +83,9 @@ func DefaultConfig() *Config {
 		EnableIP:        true,
 		EnableUserAgent: true,
 	}
-}
 
-func Sparkle(config ...*Config) mofu.Middleware {
-	cfg := DefaultConfig()
-	if len(config) > 0 && config[0] != nil {
-		cfg = config[0]
+	for _, opt := range opts {
+		opt(cfg)
 	}
 
 	if cfg.MaxBodySize < 0 {
@@ -130,7 +153,7 @@ func formatLogEntry(c *mofu.C, recorder *statusRecorder, dur time.Duration, reqB
 	sb.WriteString(fmt.Sprintf("[%s] ", time.Now().Format("2006-01-02 15:04:05")))
 
 	// Status code with color
-	if config.EnableColors {
+	if config.EnableColor {
 		sb.WriteString(fmt.Sprintf("%s%3d%s ",
 			getStatusColor(recorder.status), recorder.status, color.Reset))
 	} else {
@@ -139,7 +162,7 @@ func formatLogEntry(c *mofu.C, recorder *statusRecorder, dur time.Duration, reqB
 
 	// Method
 	method := fmt.Sprintf("%-7s", c.Request.Method)
-	if config.EnableColors {
+	if config.EnableColor {
 		sb.WriteString(fmt.Sprintf("%s%s%s ", color.Magenta, method, color.Reset))
 	} else {
 		sb.WriteString(fmt.Sprintf("%s ", method))
@@ -171,7 +194,7 @@ func formatLogEntry(c *mofu.C, recorder *statusRecorder, dur time.Duration, reqB
 
 	// Duration with color based on performance
 	durationStr := formatDuration(dur)
-	if config.EnableColors {
+	if config.EnableColor {
 		sb.WriteString(fmt.Sprintf(" | %s%s%s",
 			getDurationColor(dur), durationStr, color.Reset))
 	} else {
