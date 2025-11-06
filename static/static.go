@@ -50,7 +50,6 @@ type Config struct {
 func Sparkle(root string, opts ...ConfigOption) mofu.Middleware {
 	cfg := &Config{
 		Index:    "index.html",
-		Prefix:   "",
 		CacheAge: 3600,
 		Root:     ".",
 	}
@@ -140,6 +139,24 @@ func serveFile(c *mofu.C, file fs.File, name string, maxAge int) error {
 		return c.Next()
 	}
 
+	contentTypes := map[string]string{
+		".css":  "text/css; charset=utf-8",
+		".js":   "application/javascript; charset=utf-8",
+		".html": "text/html; charset=utf-8",
+		".json": "application/json; charset=utf-8",
+		".png":  "image/png",
+		".jpg":  "image/jpeg",
+		".svg":  "image/svg+xml",
+	}
+
+	detectContentType := func(name string) string {
+		ext := strings.ToLower(path.Ext(name))
+		if ct, ok := contentTypes[ext]; ok {
+			return ct
+		}
+		return "application/octet-stream"
+	}
+
 	c.SetHeader("Content-Type", detectContentType(name))
 	c.SetHeader("Cache-Control", fmt.Sprintf("public, max-age=%d", maxAge))
 	c.SetHeader("X-Content-Type-Options", "nosniff")
@@ -147,22 +164,4 @@ func serveFile(c *mofu.C, file fs.File, name string, maxAge int) error {
 	http.ServeContent(c.Writer, c.Request, name, stat.ModTime(), file.(io.ReadSeeker))
 	c.Abort()
 	return nil
-}
-
-var contentTypes = map[string]string{
-	".css":  "text/css; charset=utf-8",
-	".js":   "application/javascript; charset=utf-8",
-	".html": "text/html; charset=utf-8",
-	".json": "application/json; charset=utf-8",
-	".png":  "image/png",
-	".jpg":  "image/jpeg",
-	".svg":  "image/svg+xml",
-}
-
-func detectContentType(name string) string {
-	ext := strings.ToLower(path.Ext(name))
-	if ct, ok := contentTypes[ext]; ok {
-		return ct
-	}
-	return "application/octet-stream"
 }
